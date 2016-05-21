@@ -10,18 +10,7 @@
 /****************************************************************************/
 
 #include "SLIC.h"
-#include "RandomGen.h"
-
-/* OpenCV libraries for video and image
-   elaborations. */
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
-/* Intel Threading Building Blocks libraries
-   for multi-threading. */
-#include <tbb/tbb.h>
-
-#include <vector>
+/* Deletion of unuseful includes: they're in the header SLIC.h*/
 
 using namespace cv;
 
