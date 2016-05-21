@@ -33,7 +33,8 @@ int VideoSLIC(
 int main(int argc, char *argv[])
 {
 	/* Video source location. */
-	const string videoLocation = (argc == 2) ? argv[1] : "C:\\Users\\Claudiu\\Desktop\\Video Data Set\\EDSH1.avi";
+	//	const string videoLocation = (argc == 2) ? argv[1] : "C:\\Users\\Claudiu\\Desktop\\Video Data Set\\EDSH1.avi";
+	const string videoLocation = "../../ThesisData/vid/EDSHK.avi";
 
 	/* Output window name. */
 	const string windowName = "VideoSLIC";
@@ -53,30 +54,30 @@ int main(int argc, char *argv[])
 
 	/* SLIC algorithm parameters. */
 	unsigned spatialDistanceWeight = 30;
-	unsigned superpixelNumber      = 1000;
+	unsigned superpixelNumber = 1000;
 	/* There's no need to set both iterationNumber and errorThreshold,
 	   it's enough to set only one of them and set the other one to zero.
 	   Which of the two values will be used for video elaboration depends
 	   on the value of the field SLICMode. */
-	unsigned iterationNumber       = 10;
-	double   errorThreshold        = 0.25;
+	unsigned iterationNumber = 10;
+	double   errorThreshold = 0.25;
 
 	/* Compute SLIC algorithm step for later use in generating Gaussian noise. */
-	const unsigned videoWidth  = static_cast<unsigned>(capturedVideo.get(CV_CAP_PROP_FRAME_WIDTH));
+	const unsigned videoWidth = static_cast<unsigned>(capturedVideo.get(CV_CAP_PROP_FRAME_WIDTH));
 	const unsigned videoHeight = static_cast<unsigned>(capturedVideo.get(CV_CAP_PROP_FRAME_HEIGHT));
-	unsigned       stepSLIC    = static_cast<unsigned>(sqrt((videoHeight * videoWidth) / superpixelNumber) + 0.5);
+	unsigned       stepSLIC = static_cast<unsigned>(sqrt((videoHeight * videoWidth) / superpixelNumber) + 0.5);
 
 	/* Parameters used when applying SLIC algorithm to video sequences. */
 	/* Decide if frames are to be processed independently or the result
-	   obtained after elaborating one frame should be used to initialize 
+	   obtained after elaborating one frame should be used to initialize
 	   the next frame (more details are found in the paper). */
 	bool                 connectedFrames = true;
-	SLICElaborationMode  SLICMode        = ERROR_THRESHOLD;
-	VideoElaborationMode VideoMode       = KEY_FRAMES_NOISE;
+	SLICElaborationMode  SLICMode = ERROR_THRESHOLD;
+	VideoElaborationMode VideoMode = KEY_FRAMES_NOISE;
 	/* Use a key frame every keyFramesRatio frames. */
-	unsigned             keyFramesRatio  = 30;
+	unsigned             keyFramesRatio = 30;
 	/* Standard deviation of the Gaussian noise. */
-	double               GaussianStdDev  = static_cast<double>(stepSLIC / 5);
+	double               GaussianStdDev = static_cast<double>(stepSLIC / 5);
 
 	/* Call function to perform SLIC algorithm operations on video. */
 	VideoSLIC(
@@ -108,7 +109,7 @@ int VideoSLIC(
 	)
 {
 	/* Get video width and height. */
-	const unsigned videoWidth  = static_cast<unsigned>(capturedVideo.get(CV_CAP_PROP_FRAME_WIDTH));
+	const unsigned videoWidth = static_cast<unsigned>(capturedVideo.get(CV_CAP_PROP_FRAME_WIDTH));
 	const unsigned videoHeight = static_cast<unsigned>(capturedVideo.get(CV_CAP_PROP_FRAME_HEIGHT));
 
 	/* Compute the sampling step and round to the nearest integer. */
@@ -125,9 +126,9 @@ int VideoSLIC(
 	unsigned framesNumber = 0;
 
 	/* Debug data. */
-	double totalTime    = 0;
-	double totalTime2   = 0;
-	double avgTime      = 0;
+	double totalTime = 0;
+	double totalTime2 = 0;
+	double avgTime = 0;
 	double stdDeviation = 0;
 
 	/* Output window name. */
@@ -183,9 +184,9 @@ int VideoSLIC(
 		imshow(windowName, currentFrame);
 
 		/* Compute some statistics and print them on screen. */
-		totalTime  += elapsedTime.count();
+		totalTime += elapsedTime.count();
 		totalTime2 += elapsedTime.count() * elapsedTime.count();
-		avgTime     = totalTime / framesNumber;
+		avgTime = totalTime / framesNumber;
 
 		stdDeviation = sqrt(framesNumber * totalTime2 - totalTime * totalTime) / framesNumber;
 
