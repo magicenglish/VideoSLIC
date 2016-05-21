@@ -9,6 +9,9 @@
 /*                                                                          */
 /****************************************************************************/
 
+#ifndef SLIC_H
+#define SLIC_H
+
 /* OpenCV libraries for video and image elaborations. */
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -32,11 +35,8 @@ for multi-threading. */
 #include <fstream>
 
 
-#ifndef SLIC_H
-#define SLIC_H
-
-	  /* Choose to run SLIC algorithm for a fixed number of iterations or
-		 until the residual error converges below a certain threshold. */
+/* Choose to run SLIC algorithm for a fixed number of iterations or
+	until the residual error converges below a certain threshold. */
 enum SLICElaborationMode {
 	/* Repeat SLIC operations for a fixed number of times. */
 	FIXED_ITERATIONS,
