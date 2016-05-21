@@ -3,24 +3,14 @@
 /* Original algorithm: http://ivrg.epfl.ch/research/superpixels             */
 /* Original OpenCV implementation: http://github.com/PSMM/SLIC-Superpixels  */
 /*                                                                          */
-/* Paper: "Optimizing Superpixel Clustering for Real-Time                   *//*         Egocentric-Vision Applications"                                  */
+/* Paper: "Optimizing Superpixel Clustering for Real-Time                   */
+/*         Egocentric-Vision Applications"                                  */
 /*        http://www.isip40.it/resources/papers/2015/SPL_Pietro.pdf         */
 /*                                                                          */
 /****************************************************************************/
 
 #include "SLIC.h"
-#include "RandomGen.h"
-
-/* OpenCV libraries for video and image
-   elaborations. */
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
-/* Intel Threading Building Blocks libraries
-   for multi-threading. */
-#include <tbb/tbb.h>
-
-#include <vector>
+/* Deletion of unuseful includes: they're in the header SLIC.h*/
 
 using namespace cv;
 
