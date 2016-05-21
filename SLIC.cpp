@@ -3,7 +3,8 @@
 /* Original algorithm: http://ivrg.epfl.ch/research/superpixels             */
 /* Original OpenCV implementation: http://github.com/PSMM/SLIC-Superpixels  */
 /*                                                                          */
-/* Paper: "Optimizing Superpixel Clustering for Real-Time                   *//*         Egocentric-Vision Applications"                                  */
+/* Paper: "Optimizing Superpixel Clustering for Real-Time                   */
+/*         Egocentric-Vision Applications"                                  */
 /*        http://www.isip40.it/resources/papers/2015/SPL_Pietro.pdf         */
 /*                                                                          */
 /****************************************************************************/
