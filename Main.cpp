@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	   the next frame (more details are found in the paper). */
 	bool                 connectedFrames = true;
 	SLICElaborationMode  SLICMode = ERROR_THRESHOLD;
-	VideoElaborationMode VideoMode = KEY_FRAMES_NOISE;
+	VideoElaborationMode VideoMode = NAIVE;							//I'm not using key frames nor gaussian noise
 	/* Use a key frame every keyFramesRatio frames. */
 	unsigned             keyFramesRatio = 30;
 	/* Standard deviation of the Gaussian noise. */
@@ -163,11 +163,22 @@ int VideoSLIC(
 		//SLICFrame->enforceConnectivity(currentFrame);
 		//SLICFrame->colorSuperpixels(currentFrame);
 
-		/* Convert frame back to RGB. */
-		cvtColor(currentFrame, currentFrame, CV_Lab2BGR);
+		///* COMMENTED ONLY IN STUDY MODE!!! */
+		///* Convert frame back to RGB. */
+		//cvtColor(currentFrame, currentFrame, CV_Lab2BGR);
 
-		SLICFrame->drawClusterContours(currentFrame, Vec3b(0, 0, 255)/*, Rect(videoWidth / 2, 0, videoWidth / 2, videoHeight)*/);
-		//SLICFrame->drawClusterCentres(currentFrame, Scalar(0, 0, 255));
+		//SLICFrame->drawClusterContours(currentFrame, Vec3b(0, 0, 255)/*, Rect(videoWidth / 2, 0, videoWidth / 2, videoHeight)*/);
+		////SLICFrame->drawClusterCentres(currentFrame, Scalar(0, 0, 255));
+
+		/* STUDY USE ONLY: I create an image with orphan pixels and I add
+		   the Superpixels' contours */
+		Mat orphanPixels = Mat(videoHeight, videoWidth, CV_8UC1);
+		SLICFrame->orphanPixelsImage(orphanPixels);
+		cvtColor(orphanPixels, orphanPixels, CV_GRAY2RGB);
+		SLICFrame->drawClusterContours(orphanPixels, Vec3b(0, 0, 255));
+		SLICFrame->drawClusterCentres(orphanPixels, Scalar(0, 255, 0));
+		/* END OF STUDY USE, the only other line changed is the imshow one */
+
 
 		/* Measure time after processing a video frame. */
 		boost::chrono::high_resolution_clock::time_point endPoint =
@@ -181,7 +192,7 @@ int VideoSLIC(
 		//SLICFrame->drawInformation(currentFrame, framesNumber, elapsedTime.count());
 
 		/* Show frame in the window. */
-		imshow(windowName, currentFrame);
+		imshow(windowName, /*STUDY USE ONLY*/ /*currentFrame*/ orphanPixels);
 
 		/* Compute some statistics and print them on screen. */
 		totalTime += elapsedTime.count();

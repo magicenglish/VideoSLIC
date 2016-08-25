@@ -76,6 +76,10 @@ protected:
 	   pixelCluster[p] = c means that p-th pixel belongs to c-th cluster. */
 	std::vector<int> pixelCluster;
 
+	/* The vector containing the pixels reached by clusters. Used to identify 
+	   orphan's pixels*/
+	std::vector<uchar> pixelReachedByClusters;
+
 	/* The distance of each pixel from the nearest cluster's centre.
 	   Suppose c being the nearest cluster to pixel p.
 	   distanceFromClusterCentre[p] = d means that the distance between the p-th
@@ -178,7 +182,7 @@ public:
 	virtual ~SLIC();
 
 	/* Generate superpixels for an image/frame. */
-	void createSuperpixels(
+	void SLIC::createSuperpixels(
 		const cv::Mat&       image,
 		const unsigned       samplingStep,
 		const unsigned       spatialDistanceWeight,
@@ -196,27 +200,30 @@ public:
 
 	/* Color each created superpixel in a certain area (by default the
 	   entire image) with superpixel's average color. */
-	void colorSuperpixels(
+	void SLIC::colorSuperpixels(
 		cv::Mat&  image,
 		cv::Rect& areaToColor = cv::Rect(0, 0, INT_MAX, INT_MAX));
 
 	/* Draw contours around created superpixels in a certain area
 	   (by default the entire image). */
-	void drawClusterContours(
+	void SLIC::drawClusterContours(
 		cv::Mat&         image,
 		const cv::Vec3b& contourColor,
 		cv::Rect&        areaToDraw = cv::Rect(0, 0, INT_MAX, INT_MAX));
 
 	/* Draw superpixels' centres. */
-	void drawClusterCentres(
+	void SLIC::drawClusterCentres(
 		cv::Mat&          image,
 		const cv::Scalar& centreColor);
 
 	/* Draw superpixels' informations (for debug/analysis purposes). */
-	void drawInformation(
+	void SLIC::drawInformation(
 		cv::Mat&       image,
 		const unsigned totalFrames,
 		const unsigned executionTimeInMilliseconds);
+
+	/* STUDY USE ONLY: Orphan Pixels' image */
+	void SLIC::orphanPixelsImage(cv::Mat& image);
 };
 
 #endif

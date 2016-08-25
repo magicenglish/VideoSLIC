@@ -17,34 +17,38 @@ using namespace cv;
 SLIC::SLIC()
 {
 	clearSLICData();
+	this->pixelCluster.clear();
+	this->distanceFromClusterCentre.clear();
+	this->pixelReachedByClusters.clear();
 }
 
 SLIC::SLIC(const SLIC& otherSLIC)
 {
 	/* Copy debug data. */
-	this->averageError         = otherSLIC.averageError;
-	this->averageIterations    = otherSLIC.averageIterations;
-	this->minError             = otherSLIC.minError;
-	this->minIterations        = otherSLIC.minIterations;
-	this->maxError             = otherSLIC.maxError;
-	this->maxIterations        = otherSLIC.maxIterations;
+	this->averageError = otherSLIC.averageError;
+	this->averageIterations = otherSLIC.averageIterations;
+	this->minError = otherSLIC.minError;
+	this->minIterations = otherSLIC.minIterations;
+	this->maxError = otherSLIC.maxError;
+	this->maxIterations = otherSLIC.maxIterations;
 	this->averageExecutionTime = otherSLIC.averageExecutionTime;
-	this->minExecutionTime     = otherSLIC.minExecutionTime;
-	this->maxExecutionTime     = otherSLIC.maxExecutionTime;
+	this->minExecutionTime = otherSLIC.minExecutionTime;
+	this->maxExecutionTime = otherSLIC.maxExecutionTime;
 
 	/* Copy variables. */
-	this->iterationIndex        = otherSLIC.iterationIndex;
-	this->pixelsNumber          = otherSLIC.pixelsNumber;
-	this->clustersNumber        = otherSLIC.clustersNumber;
-	this->samplingStep          = otherSLIC.samplingStep;
+	this->iterationIndex = otherSLIC.iterationIndex;
+	this->pixelsNumber = otherSLIC.pixelsNumber;
+	this->clustersNumber = otherSLIC.clustersNumber;
+	this->samplingStep = otherSLIC.samplingStep;
 	this->spatialDistanceWeight = otherSLIC.spatialDistanceWeight;
-	this->distanceFactor        = otherSLIC.distanceFactor;
-	this->totalResidualError    = otherSLIC.totalResidualError;
-	this->errorThreshold        = otherSLIC.errorThreshold;
-	this->framesNumber          = otherSLIC.framesNumber;
+	this->distanceFactor = otherSLIC.distanceFactor;
+	this->totalResidualError = otherSLIC.totalResidualError;
+	this->errorThreshold = otherSLIC.errorThreshold;
+	this->framesNumber = otherSLIC.framesNumber;
 
 	/* Copy matrices. */
 	this->pixelCluster.resize(otherSLIC.pixelsNumber);
+	this->pixelReachedByClusters.resize(otherSLIC.pixelsNumber);
 	this->distanceFromClusterCentre.resize(otherSLIC.pixelsNumber);
 	this->clusterCentres.resize(otherSLIC.clusterCentres.size());
 	this->previousClusterCentres.resize(otherSLIC.previousClusterCentres.size());
@@ -53,19 +57,20 @@ SLIC::SLIC(const SLIC& otherSLIC)
 
 	for (unsigned n = 0; n < otherSLIC.pixelsNumber; ++n)
 	{
-		this->pixelCluster[n]              = otherSLIC.pixelCluster[n];
+		this->pixelCluster[n] = otherSLIC.pixelCluster[n];
+		this->pixelReachedByClusters[n] = otherSLIC.pixelReachedByClusters[n];
 		this->distanceFromClusterCentre[n] = otherSLIC.distanceFromClusterCentre[n];
 	}
 
 	for (unsigned n = 0; n < otherSLIC.clustersNumber; ++n)
 	{
-		this->pixelsOfSameCluster[n]    = otherSLIC.pixelsOfSameCluster[n];
-		this->residualError[n]          = otherSLIC.residualError[n];
+		this->pixelsOfSameCluster[n] = otherSLIC.pixelsOfSameCluster[n];
+		this->residualError[n] = otherSLIC.residualError[n];
 	}
 
 	for (unsigned n = 0; n < 5 * otherSLIC.clustersNumber; ++n)
 	{
-		this->clusterCentres[n]         = otherSLIC.clusterCentres[n];
+		this->clusterCentres[n] = otherSLIC.clusterCentres[n];
 		this->previousClusterCentres[n] = otherSLIC.previousClusterCentres[n];
 	}
 }
@@ -73,35 +78,38 @@ SLIC::SLIC(const SLIC& otherSLIC)
 SLIC::~SLIC()
 {
 	clearSLICData();
+	this->pixelCluster.clear();
+	this->pixelReachedByClusters.clear();
+	this->distanceFromClusterCentre.clear();
 }
 
 void SLIC::clearSLICData()
 {
 	/* Reset debug data. */
-	this->averageError         = 0;
-	this->averageIterations    = 0;
-	this->minError             = 0;
-	this->minIterations        = 0;
-	this->maxError             = 0;
-	this->maxIterations        = 0;
+	this->averageError = 0;
+	this->averageIterations = 0;
+	this->minError = 0;
+	this->minIterations = 0;
+	this->maxError = 0;
+	this->maxIterations = 0;
 	this->averageExecutionTime = 0;
-	this->minExecutionTime     = 0;
-	this->maxExecutionTime     = 0;
+	this->minExecutionTime = 0;
+	this->maxExecutionTime = 0;
 
 	/* Reset variables. */
-	this->iterationIndex        = 0;
-	this->clustersNumber        = 0;
-	this->pixelsNumber          = 0;
-	this->samplingStep          = 0;
+	this->iterationIndex = 0;
+	this->clustersNumber = 0;
+	this->pixelsNumber = 0;
+	this->samplingStep = 0;
 	this->spatialDistanceWeight = 0;
-	this->distanceFactor        = 0;
-	this->totalResidualError    = 0;
-	this->errorThreshold        = 0;
-	this->framesNumber          = 0;
+	this->distanceFactor = 0;
+	this->totalResidualError = 0;
+	this->errorThreshold = 0;
+	this->framesNumber = 0;
 
 	/* Erase all matrices' elements. */
-	this->pixelCluster.clear();
-	this->distanceFromClusterCentre.clear();
+	//this->pixelCluster.clear();
+	//this->distanceFromClusterCentre.clear();
 	this->clusterCentres.clear();
 	this->previousClusterCentres.clear();
 	this->pixelsOfSameCluster.clear();
@@ -127,28 +135,40 @@ void SLIC::initializeSLICData(
 		(((videoMode == KEY_FRAMES) || (videoMode == KEY_FRAMES_NOISE)) && (framesNumber % keyFramesRatio == 0)))
 	{
 		/* Clear previous data before initialization. */
+		if (clusterCentres.size() == 0) {
+			this->pixelCluster.clear();
+			this->distanceFromClusterCentre.clear();
+			this->pixelReachedByClusters.clear();
+		}
 		clearSLICData();
 
 		/* Initialize debug data. */
-		this->minError          = DBL_MAX;
-		this->minIterations     = UINT_MAX;
-		this->minExecutionTime  = UINT_MAX;
+		this->minError = DBL_MAX;
+		this->minIterations = UINT_MAX;
+		this->minExecutionTime = UINT_MAX;
 
 		/* Initialize variables. */
-		this->pixelsNumber          = image.rows * image.cols;
-		this->samplingStep          = samplingStep;
+		this->pixelsNumber = image.rows * image.cols;
+		this->samplingStep = samplingStep;
 		this->spatialDistanceWeight = spatialDistanceWeight;
-		this->distanceFactor        =
+		this->distanceFactor =
 			static_cast<double>(1.0 * spatialDistanceWeight * spatialDistanceWeight / (samplingStep * samplingStep));
-		this->errorThreshold        = errorThreshold;
+		this->errorThreshold = errorThreshold;
 
-		/* Initialize the clusters and the distances matrices. */
-		for (unsigned n = 0; n < pixelsNumber; ++n)
-		{
-			pixelCluster.push_back(-1);
-			distanceFromClusterCentre.push_back(DBL_MAX);
+		if (pixelCluster.size() == 0) {
+			/* Initialize the clusters and the distances matrices. */
+			for (unsigned n = 0; n < pixelsNumber; ++n)
+			{
+				pixelCluster.push_back(-1);
+				pixelReachedByClusters.push_back(0);
+				distanceFromClusterCentre.push_back(DBL_MAX);
+			}
 		}
-
+		else {
+			pixelCluster.assign(pixelsNumber, -1);
+			pixelReachedByClusters.assign(pixelsNumber, 0);
+			distanceFromClusterCentre.assign(pixelsNumber, DBL_MAX);
+		}
 		/* Initialize the centres matrix by sampling the image
 		   at a regular step. */
 		for (int y = samplingStep; y < image.rows; y += samplingStep)
@@ -156,7 +176,7 @@ void SLIC::initializeSLICData(
 			{
 				/* Find the pixel with the lowest gradient in a 3x3 surrounding. */
 				Point lowestGradientPixel = findLowestGradient(image, Point(x, y));
-				Vec3b tempPixelColor      = image.at<Vec3b>(lowestGradientPixel.y, lowestGradientPixel.x);
+				Vec3b tempPixelColor = image.at<Vec3b>(lowestGradientPixel.y, lowestGradientPixel.x);
 
 				/* Insert a [L, A, B, x, y] centre in the centres vector. */
 				clusterCentres.push_back(tempPixelColor.val[0]);
@@ -172,7 +192,7 @@ void SLIC::initializeSLICData(
 				previousClusterCentres.push_back(tempPixelColor.val[2]);
 				previousClusterCentres.push_back(lowestGradientPixel.x);
 				previousClusterCentres.push_back(lowestGradientPixel.y);
-				
+
 				/* Initialize "pixel of same cluster" matrix. */
 				pixelsOfSameCluster.push_back(0);
 
@@ -201,17 +221,20 @@ void SLIC::initializeSLICData(
 
 	/* Initialize total residual error for each frame. */
 	this->totalResidualError = DBL_MAX;
+
+	/* Reset orphan pixels */
+	pixelReachedByClusters.assign(pixelsNumber, 0);
 }
 
 Point SLIC::findLowestGradient(
 	const cv::Mat&   image,
-	const cv::Point& centre) 
+	const cv::Point& centre)
 {
-	unsigned lowestGradient   = UINT_MAX;
+	unsigned lowestGradient = UINT_MAX;
 	Point lowestGradientPoint = Point(centre.x, centre.y);
 
-	for (int y = centre.y - 1; y <= centre.y + 1 && y < image.rows - 1; ++y) 
-		for (int x = centre.x - 1; x <= centre.x + 1 && x < image.cols - 1; ++x) 
+	for (int y = centre.y - 1; y <= centre.y + 1 && y < image.rows - 1; ++y)
+		for (int x = centre.x - 1; x <= centre.x + 1 && x < image.cols - 1; ++x)
 		{
 			/* Exclude pixels on borders. */
 			if (x < 1 || y < 1)
@@ -222,12 +245,12 @@ Point SLIC::findLowestGradient(
 			unsigned tempGradient =
 				(image.at<Vec3b>(y, x + 1).val[0] - image.at<Vec3b>(y, x - 1).val[0]) *
 				(image.at<Vec3b>(y, x + 1).val[0] - image.at<Vec3b>(y, x - 1).val[0]) +
-				(image.at<Vec3b>(y - 1, x).val[0] - image.at<Vec3b>(y + 1, x).val[0]) * 
+				(image.at<Vec3b>(y - 1, x).val[0] - image.at<Vec3b>(y + 1, x).val[0]) *
 				(image.at<Vec3b>(y - 1, x).val[0] - image.at<Vec3b>(y + 1, x).val[0]);
 
 			if (tempGradient < lowestGradient)
 			{
-				lowestGradient        = tempGradient;
+				lowestGradient = tempGradient;
 				lowestGradientPoint.x = x;
 				lowestGradientPoint.y = y;
 			}
@@ -243,21 +266,21 @@ double SLIC::computeDistance(
 {
 	/* Compute the color distance between two pixels. */
 	double colorDistance =
-		(clusterCentres[5 * centreIndex]     - pixelColor.val[0]) *
-		(clusterCentres[5 * centreIndex]     - pixelColor.val[0]) +
+		(clusterCentres[5 * centreIndex] - pixelColor.val[0]) *
+		(clusterCentres[5 * centreIndex] - pixelColor.val[0]) +
 		(clusterCentres[5 * centreIndex + 1] - pixelColor.val[1]) *
-		(clusterCentres[5 * centreIndex + 1] - pixelColor.val[1]) + 
+		(clusterCentres[5 * centreIndex + 1] - pixelColor.val[1]) +
 		(clusterCentres[5 * centreIndex + 2] - pixelColor.val[2]) *
 		(clusterCentres[5 * centreIndex + 2] - pixelColor.val[2]);
 
 	/* Compute the spatial distance between two pixels. */
 	double spaceDistance =
 		(clusterCentres[5 * centreIndex + 3] - pixelPosition.x) *
-		(clusterCentres[5 * centreIndex + 3] - pixelPosition.x) + 
+		(clusterCentres[5 * centreIndex + 3] - pixelPosition.x) +
 		(clusterCentres[5 * centreIndex + 4] - pixelPosition.y) *
 		(clusterCentres[5 * centreIndex + 4] - pixelPosition.y);
 
-	/* Compute total distance between two pixels using the formula 
+	/* Compute total distance between two pixels using the formula
 	   described in the paper. */
 	return colorDistance + distanceFactor * spaceDistance;
 }
@@ -283,56 +306,58 @@ void SLIC::createSuperpixels(
 	   until the number of iteration is reached. */
 	for (iterationIndex = 0; ((totalResidualError > errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
 		((iterationIndex < iterationNumber) && (SLICMode == FIXED_ITERATIONS)); ++iterationIndex)
-	{
+			{
 		/* Reset distance values. */
 		tbb::parallel_for<unsigned>(0, pixelsNumber, 1, [=](unsigned n)
 		{
 			distanceFromClusterCentre[n] = DBL_MAX;
 		});
-		
+
 		tbb::parallel_for<unsigned>(0, clustersNumber, 1, [=](unsigned centreIndex)
 		{
 			/* For each cluster, look for pixels in a 2 x step by 2 x step region only. */
 			for (int y = static_cast<int>(clusterCentres[5 * centreIndex + 4]) - samplingStep - 1;
-				y < clusterCentres[5 * centreIndex + 4] + samplingStep + 1; ++y) 
+			y < clusterCentres[5 * centreIndex + 4] + samplingStep + 1; ++y)
 				for (int x = static_cast<int>(clusterCentres[5 * centreIndex + 3]) - samplingStep - 1;
-					x < clusterCentres[5 * centreIndex + 3] + samplingStep + 1; ++x)
+			x < clusterCentres[5 * centreIndex + 3] + samplingStep + 1; ++x)
+			{
+				/* Verify that neighbor pixel is within the image boundaries. */
+				if (x >= 0 && x < image.cols && y >= 0 && y < image.rows)
 				{
-					/* Verify that neighbor pixel is within the image boundaries. */
-					if (x >= 0 && x < image.cols && y >= 0 && y < image.rows)
-					{
-						Vec3b pixelColor = image.at<Vec3b>(y, x);
-						
-						double tempDistance =
-							computeDistance(centreIndex, Point(x, y), pixelColor);
+					Vec3b pixelColor = image.at<Vec3b>(y, x);
 
-						/* Update pixel's cluster if this distance is smaller
-						   than pixel's previous distance. */
-						if (tempDistance < distanceFromClusterCentre[y * image.cols + x])
-						{
-							distanceFromClusterCentre[y * image.cols + x] = tempDistance;
-							pixelCluster[y * image.cols + x]              = centreIndex;
-						}
+					double tempDistance =
+						computeDistance(centreIndex, Point(x, y), pixelColor);
+
+					pixelReachedByClusters[y * image.cols + x] = 255;
+					
+					/* Update pixel's cluster if this distance is smaller
+					   than pixel's previous distance. */
+					if (tempDistance < distanceFromClusterCentre[y * image.cols + x])
+					{
+						distanceFromClusterCentre[y * image.cols + x] = tempDistance;
+						pixelCluster[y * image.cols + x] = centreIndex;
 					}
 				}
+			}
 		});
 
 		/* Reset centres values and the number of pixel
 		   per cluster to zero. */
 		tbb::parallel_for<unsigned>(0, clustersNumber, 1, [=](unsigned centreIndex)
 		{
-			clusterCentres[5 * centreIndex]     = 0;
+			clusterCentres[5 * centreIndex] = 0;
 			clusterCentres[5 * centreIndex + 1] = 0;
 			clusterCentres[5 * centreIndex + 2] = 0;
 			clusterCentres[5 * centreIndex + 3] = 0;
 			clusterCentres[5 * centreIndex + 4] = 0;
 
-			pixelsOfSameCluster[centreIndex]    = 0;
+			pixelsOfSameCluster[centreIndex] = 0;
 		});
 
 		/* Compute the new cluster centres. */
-		for (int y = 0; y < image.rows; ++y) 
-			for (int x = 0; x < image.cols; ++x) 
+		for (int y = 0; y < image.rows; ++y)
+			for (int x = 0; x < image.cols; ++x)
 			{
 				int currentPixelCluster = pixelCluster[y * image.cols + x];
 
@@ -343,13 +368,13 @@ void SLIC::createSuperpixels(
 					   cluster for future centre recalculation. */
 					Vec3b pixelColor = image.at<Vec3b>(y, x);
 
-					clusterCentres[5 * currentPixelCluster]     += pixelColor.val[0];
+					clusterCentres[5 * currentPixelCluster] += pixelColor.val[0];
 					clusterCentres[5 * currentPixelCluster + 1] += pixelColor.val[1];
 					clusterCentres[5 * currentPixelCluster + 2] += pixelColor.val[2];
 					clusterCentres[5 * currentPixelCluster + 3] += x;
 					clusterCentres[5 * currentPixelCluster + 4] += y;
 
-					pixelsOfSameCluster[currentPixelCluster]    += 1;
+					pixelsOfSameCluster[currentPixelCluster] += 1;
 				}
 			}
 
@@ -359,7 +384,7 @@ void SLIC::createSuperpixels(
 			/* Avoid empty clusters, if there are any. */
 			if (pixelsOfSameCluster[centreIndex] != 0)
 			{
-				clusterCentres[5 * centreIndex]     /= pixelsOfSameCluster[centreIndex];
+				clusterCentres[5 * centreIndex] /= pixelsOfSameCluster[centreIndex];
 				clusterCentres[5 * centreIndex + 1] /= pixelsOfSameCluster[centreIndex];
 				clusterCentres[5 * centreIndex + 2] /= pixelsOfSameCluster[centreIndex];
 				clusterCentres[5 * centreIndex + 3] /= pixelsOfSameCluster[centreIndex];
@@ -388,7 +413,7 @@ void SLIC::createSuperpixels(
 					(clusterCentres[5 * centreIndex + 3] - previousClusterCentres[5 * centreIndex + 3]));
 
 				/* Update previous centres matrix. */
-				previousClusterCentres[5 * centreIndex]     = clusterCentres[5 * centreIndex];
+				previousClusterCentres[5 * centreIndex] = clusterCentres[5 * centreIndex];
 				previousClusterCentres[5 * centreIndex + 1] = clusterCentres[5 * centreIndex + 1];
 				previousClusterCentres[5 * centreIndex + 2] = clusterCentres[5 * centreIndex + 2];
 				previousClusterCentres[5 * centreIndex + 3] = clusterCentres[5 * centreIndex + 3];
@@ -414,66 +439,66 @@ void SLIC::enforceConnectivity(const cv::Mat image)
 	int adjacentCluster = 0;
 
 	/* Average number of pixels contained in any expected cluster. */
- 	const unsigned clustersAverageSize = static_cast<unsigned>(pixelsNumber / clustersNumber + 0.5);
- 	 
- 	std::vector<int> newPixelCluster;
+	const unsigned clustersAverageSize = static_cast<unsigned>(pixelsNumber / clustersNumber + 0.5);
+
+	std::vector<int> newPixelCluster;
 
 	/* Initialize the new cluster matrix. */
 	for (unsigned n = 0; n < pixelsNumber; ++n)
 		newPixelCluster.push_back(-1);
- 	
+
 	/* Starting from each pixel in the image, we create paths of pixels belonging to the same cluster.
 	   If the resulting paths are not long enough, i.e. paths contain less than 1/4 of the average number of
 	   pixels contained in a cluster, then these paths are merged with a surrounding adjacent cluster. Doing so,
 	   in the end there won't be any superpixels smaller than 1/4 of the average expected cluster size. */
- 	for (int y = 0; y < image.rows; ++y)
+	for (int y = 0; y < image.rows; ++y)
 		for (int x = 0; x < image.cols; ++x)
- 	 		if (newPixelCluster[y * image.cols + x] == -1)
+			if (newPixelCluster[y * image.cols + x] == -1)
 			{
- 	 			std::vector<Point> pixelSegment;
- 	 			pixelSegment.push_back(Point(x, y));
+				std::vector<Point> pixelSegment;
+				pixelSegment.push_back(Point(x, y));
 
 				newPixelCluster[y * image.cols + x] = pixelCluster[y * image.cols + x];
- 	 
- 	 			/* Find an adjacent cluster for possible later use. */
-				for (int tempY = pixelSegment[0].y - 1; tempY <= pixelSegment[0].y + 1; ++tempY) 
+
+				/* Find an adjacent cluster for possible later use. */
+				for (int tempY = pixelSegment[0].y - 1; tempY <= pixelSegment[0].y + 1; ++tempY)
 					for (int tempX = pixelSegment[0].x - 1; tempX <= pixelSegment[0].x + 1; ++tempX)
 					{
 						/* Verify that neighbor pixel is within the image boundaries
 						   and belongs to a cluster. */
 						if (tempX >= 0 && tempX < image.cols && tempY >= 0 && tempY < image.rows &&
-							newPixelCluster[tempY * image.cols + tempX] != -1) 
+							newPixelCluster[tempY * image.cols + tempX] != -1)
 						{
 							/* Break the loop when finding an adjacent cluster. */
 							adjacentCluster = newPixelCluster[tempY * image.cols + tempX];
 							break;
 						}
 					}
- 	 
- 	 			unsigned count = 1;
- 	 			for (unsigned c = 0; c < count; ++c)
-					for (int tempY = pixelSegment[c].y - 1; tempY <= pixelSegment[c].y + 1; ++tempY) 
+
+				unsigned count = 1;
+				for (unsigned c = 0; c < count; ++c)
+					for (int tempY = pixelSegment[c].y - 1; tempY <= pixelSegment[c].y + 1; ++tempY)
 						for (int tempX = pixelSegment[c].x - 1; tempX <= pixelSegment[c].x + 1; ++tempX)
- 	 					{
+						{
 							/* Verify that neighbor pixel is within the image boundaries
 							   and belongs to the same cluster of the original pixel. */
-	 						if (tempX >= 0 && tempX < image.cols && tempY >= 0 && tempY < image.rows &&
+							if (tempX >= 0 && tempX < image.cols && tempY >= 0 && tempY < image.rows &&
 								newPixelCluster[tempY * image.cols + tempX] == -1 &&
 								pixelCluster[tempY * image.cols + tempX] == pixelCluster[y * image.cols + x])
 							{
 								/* Expand the segment by inserting pixels of the same cluster. */
- 	 							pixelSegment.push_back(Point(tempX, tempY));
- 	 							newPixelCluster[tempY * image.cols + tempX] = pixelCluster[y * image.cols + x];
- 	 							++count;
+								pixelSegment.push_back(Point(tempX, tempY));
+								newPixelCluster[tempY * image.cols + tempX] = pixelCluster[y * image.cols + x];
+								++count;
 							}
- 	 					}
- 	 
- 	 			/* Enforce connectivity for the segments smaller than 1/4 of
+						}
+
+				/* Enforce connectivity for the segments smaller than 1/4 of
 				   the average cluster size. */
- 	 			if (count <= clustersAverageSize / 4)
- 	 				for (unsigned c = 0; c < count; ++c) 
- 	 					newPixelCluster[pixelSegment[c].y * image.cols + pixelSegment[c].x] = adjacentCluster;
- 	 		}
+				if (count <= clustersAverageSize / 4)
+					for (unsigned c = 0; c < count; ++c)
+						newPixelCluster[pixelSegment[c].y * image.cols + pixelSegment[c].x] = adjacentCluster;
+			}
 
 	for (unsigned n = 0; n < pixelsNumber; ++n)
 		pixelCluster[n] = newPixelCluster[n];
@@ -483,18 +508,18 @@ void SLIC::enforceConnectivity(const cv::Mat image)
 	   per cluster to zero. */
 	tbb::parallel_for<unsigned>(0, clustersNumber, 1, [=](unsigned centreIndex)
 	{
-		clusterCentres[5 * centreIndex]     = 0;
+		clusterCentres[5 * centreIndex] = 0;
 		clusterCentres[5 * centreIndex + 1] = 0;
 		clusterCentres[5 * centreIndex + 2] = 0;
 		clusterCentres[5 * centreIndex + 3] = 0;
 		clusterCentres[5 * centreIndex + 4] = 0;
 
-		pixelsOfSameCluster[centreIndex]    = 0;
+		pixelsOfSameCluster[centreIndex] = 0;
 	});
 
 	/* Compute the new cluster centres. */
-	for (int y = 0; y < image.rows; ++y) 
-		for (int x = 0; x < image.cols; ++x) 
+	for (int y = 0; y < image.rows; ++y)
+		for (int x = 0; x < image.cols; ++x)
 		{
 			int currentPixelCluster = pixelCluster[y * image.cols + x];
 
@@ -505,13 +530,13 @@ void SLIC::enforceConnectivity(const cv::Mat image)
 					cluster for future centre recalculation. */
 				Vec3b pixelColor = image.at<Vec3b>(y, x);
 
-				clusterCentres[5 * currentPixelCluster]     += pixelColor.val[0];
+				clusterCentres[5 * currentPixelCluster] += pixelColor.val[0];
 				clusterCentres[5 * currentPixelCluster + 1] += pixelColor.val[1];
 				clusterCentres[5 * currentPixelCluster + 2] += pixelColor.val[2];
 				clusterCentres[5 * currentPixelCluster + 3] += x;
 				clusterCentres[5 * currentPixelCluster + 4] += y;
 
-				pixelsOfSameCluster[currentPixelCluster]    += 1;
+				pixelsOfSameCluster[currentPixelCluster] += 1;
 			}
 		}
 
@@ -521,7 +546,7 @@ void SLIC::enforceConnectivity(const cv::Mat image)
 		/* Avoid empty clusters, if there are any. */
 		if (pixelsOfSameCluster[centreIndex] != 0)
 		{
-			clusterCentres[5 * centreIndex]     /= pixelsOfSameCluster[centreIndex];
+			clusterCentres[5 * centreIndex] /= pixelsOfSameCluster[centreIndex];
 			clusterCentres[5 * centreIndex + 1] /= pixelsOfSameCluster[centreIndex];
 			clusterCentres[5 * centreIndex + 2] /= pixelsOfSameCluster[centreIndex];
 			clusterCentres[5 * centreIndex + 3] /= pixelsOfSameCluster[centreIndex];
@@ -563,7 +588,7 @@ void SLIC::colorSuperpixels(
 void SLIC::drawClusterContours(
 	cv::Mat&         image,
 	const cv::Vec3b& contourColor,
-	cv::Rect&        areaToDraw) 
+	cv::Rect&        areaToDraw)
 {
 	/* Verify that area to color is within image boundaries,
 	   otherwise reset area to the entire image. */
@@ -591,11 +616,11 @@ void SLIC::drawClusterContours(
 			if (pixelCluster[y * image.cols + x] >= 0)
 			{
 				/* Compare the pixel to its eight neighbor pixels. */
-				for (int tempY = y - 1; tempY <= y + 1; ++tempY) 
+				for (int tempY = y - 1; tempY <= y + 1; ++tempY)
 					for (int tempX = x - 1; tempX <= x + 1; ++tempX)
 					{
 						/* Verify that neighbor pixel is within the image boundaries. */
-						if (tempX >= 0 && tempX < image.cols && tempY >= 0 && tempY < image.rows) 
+						if (tempX >= 0 && tempX < image.cols && tempY >= 0 && tempY < image.rows)
 							/* Verify that neighbor pixel belongs to a valid different cluster
 							and it's not already a contour pixel. */
 							if (pixelCluster[tempY * image.cols + tempX] > -1 &&
@@ -604,7 +629,7 @@ void SLIC::drawClusterContours(
 							{
 								isContour[y * image.cols + x] = true;
 								/* Color contour pixel. */
-								image.at<Vec3b>(y, x)         = contourColor;
+								image.at<Vec3b>(y, x) = contourColor;
 							}
 					}
 			}
@@ -620,7 +645,7 @@ void SLIC::drawClusterCentres(
 	{
 		/* Draw a circle on the image for each cluster centre. */
 		circle(image, Point(static_cast<int>(clusterCentres[5 * n + 3]),
-			static_cast<int>(clusterCentres[5 * n + 4])), 3, centreColor, 2);
+			static_cast<int>(clusterCentres[5 * n + 4])), 2, centreColor, 2);
 	});
 }
 
@@ -647,76 +672,81 @@ void SLIC::drawInformation(
 	rectangle(image, Point(0, 0), Point(260, 320), CV_RGB(255, 255, 255), CV_FILLED);
 
 	stringStream << "Frame: " << framesNumber << " (" << totalFrames << " total)";
-	putText(image, stringStream.str(), Point(5, 20), 
+	putText(image, stringStream.str(), Point(5, 20),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Superpixels: " << clustersNumber;
-	putText(image, stringStream.str(), Point(5, 40), 
+	putText(image, stringStream.str(), Point(5, 40),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Distance weight: " << spatialDistanceWeight;
-	putText(image, stringStream.str(), Point(5, 60), 
+	putText(image, stringStream.str(), Point(5, 60),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Exe. time now: " << executionTimeInMilliseconds << " ms";
-	putText(image, stringStream.str(), Point(5, 80), 
+	putText(image, stringStream.str(), Point(5, 80),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Exe. time max.: " << maxExecutionTime;
-	putText(image, stringStream.str(), Point(5, 100), 
+	putText(image, stringStream.str(), Point(5, 100),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Exe. time min.: " << minExecutionTime;
-	putText(image, stringStream.str(), Point(5, 120), 
+	putText(image, stringStream.str(), Point(5, 120),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Exe. time avg.: " << (averageExecutionTime += executionTimeInMilliseconds) / framesNumber << " ms";
-	putText(image, stringStream.str(), Point(5, 140), 
+	putText(image, stringStream.str(), Point(5, 140),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Iterations now: " << iterationIndex;
-	putText(image, stringStream.str(), Point(5, 160), 
+	putText(image, stringStream.str(), Point(5, 160),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Iterations max.: " << maxIterations;
-	putText(image, stringStream.str(), Point(5, 180), 
+	putText(image, stringStream.str(), Point(5, 180),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Iterations min.: " << minIterations;
-	putText(image, stringStream.str(), Point(5, 200), 
+	putText(image, stringStream.str(), Point(5, 200),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Iterations avg.: " << (averageIterations += iterationIndex) / framesNumber;
-	putText(image, stringStream.str(), Point(5, 220), 
+	putText(image, stringStream.str(), Point(5, 220),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Error now: " << totalResidualError;
-	putText(image, stringStream.str(), Point(5, 240), 
+	putText(image, stringStream.str(), Point(5, 240),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Error max.: " << maxError;
-	putText(image, stringStream.str(), Point(5, 260), 
+	putText(image, stringStream.str(), Point(5, 260),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Error min.: " << minError;
-	putText(image, stringStream.str(), Point(5, 280), 
+	putText(image, stringStream.str(), Point(5, 280),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
 
 	stringStream.str("");
 	stringStream << "Error avg.: " << (averageError += totalResidualError) / framesNumber;
-	putText(image, stringStream.str(), Point(5, 300), 
+	putText(image, stringStream.str(), Point(5, 300),
 		FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(0, 0, 0), 1, CV_AA);
+}
+
+void SLIC::orphanPixelsImage(cv::Mat& image) {
+	// copy vector to mat
+	memcpy(image.data, pixelReachedByClusters.data(), pixelReachedByClusters.size()*sizeof(uchar));
 }
