@@ -17,6 +17,7 @@
 #include <opencv/highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>		/*Add by PI*/
 #include <opencv2/opencv.hpp>				/*Add by PI*/
+#include "opencv2/imgcodecs.hpp"			/*Add by PI*/
 
 /* Chrono library for measuring time performances. */
 #include <boost/chrono.hpp>
@@ -55,6 +56,10 @@ enum VideoElaborationMode {
 	NOISE,
 	/* Use key frames and add Gaussian noise. */
 	KEY_FRAMES_NOISE,
+	/* Add new Superpixel finding orphan pixels*/
+	ADD_SUPERPIXELS,
+	/* Add new Superpixel finding orphan pixels*/
+	ADD_SUPERPIXELS_NOISE,
 };
 
 class SLIC
@@ -78,7 +83,10 @@ protected:
 
 	/* The vector containing the pixels reached by clusters. Used to identify 
 	   orphan's pixels*/
-	std::vector<uchar> pixelReachedByClusters;
+	//std::vector<uchar> pixelReachedByClusters;
+
+	/* orphan Pixels*/
+	cv::Mat orphanPixels;
 
 	/* The distance of each pixel from the nearest cluster's centre.
 	   Suppose c being the nearest cluster to pixel p.
@@ -221,9 +229,6 @@ public:
 		cv::Mat&       image,
 		const unsigned totalFrames,
 		const unsigned executionTimeInMilliseconds);
-
-	/* STUDY USE ONLY: Orphan Pixels' image */
-	void SLIC::orphanPixelsImage(cv::Mat& image);
 };
 
 #endif
