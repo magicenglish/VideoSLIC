@@ -83,10 +83,10 @@ protected:
 
 	/* The vector containing the pixels reached by clusters. Used to identify 
 	   orphan's pixels*/
-	//std::vector<uchar> pixelReachedByClusters;
+	std::vector<uchar> pixelReachedByClusters;
 
-	/* orphan Pixels*/
-	cv::Mat orphanPixels;
+	///* orphan Pixels*/
+	//cv::Mat orphanPixels;
 
 	/* The distance of each pixel from the nearest cluster's centre.
 	   Suppose c being the nearest cluster to pixel p.
@@ -229,6 +229,9 @@ public:
 		cv::Mat&       image,
 		const unsigned totalFrames,
 		const unsigned executionTimeInMilliseconds);
+
+	/* STUDY USE ONLY */
+	int numberOfCentres;
 };
 
 #endif

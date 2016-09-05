@@ -139,6 +139,7 @@ int VideoSLIC(
 	//namedWindow(windowName, CV_WINDOW_AUTOSIZE);
 	/////* End of study mode */
 
+	
 	/* Enter an infinite cycle to elaborate the video until its last frame. */
 	while (true)
 	{
@@ -183,8 +184,9 @@ int VideoSLIC(
 		++framesNumber;
 		//SLICFrame->drawInformation(currentFrame, framesNumber, elapsedTime.count());
 
+		/* Commented in STUDY USE ONLY */
 		/* Show frame in the window. */
-		//(windowName, /*STUDY USE ONLY*/ /*currentFrame*/ orphanPixels);
+		//namedWindow(windowName, currentFrame);
 
 		/* Compute some statistics and print them on screen. */
 		totalTime += elapsedTime.count();
@@ -194,7 +196,7 @@ int VideoSLIC(
 		stdDeviation = sqrt(framesNumber * totalTime2 - totalTime * totalTime) / framesNumber;
 
 		cout << "Frame: " << framesNumber << "   ex. time now: " << elapsedTime.count() << "   average ex. time: "
-			<< avgTime << "   stdDev: " << stdDeviation << endl << endl;
+			<< avgTime << "   numOfCentres: " << SLICFrame->numberOfCentres << "   stdDev: " << stdDeviation << endl << endl;
 
 		/* End program on ESC press. */
 		if (cvWaitKey(1) == 27)
