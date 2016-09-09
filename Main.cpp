@@ -186,7 +186,7 @@ int VideoSLIC(
 
 		/* Commented in STUDY USE ONLY */
 		/* Show frame in the window. */
-		namedWindow(windowName, CV_WINDOW_AUTOSIZE);
+		imshow(windowName, currentFrame);
 
 		/* Compute some statistics and print them on screen. */
 		totalTime += elapsedTime.count();
