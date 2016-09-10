@@ -226,7 +226,7 @@ void SLIC::initializeSLICData(
 	this->totalResidualError = DBL_MAX;
 
 	/* Reset orphan pixels */
-	if ((videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE) && (framesNumber % keyFramesRatio == 0))
+	if (videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
 		pixelReachedByClusters.assign(pixelsNumber, 255);
 
 	//if (videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
@@ -309,11 +309,13 @@ void SLIC::createSuperpixels(
 	initializeSLICData(
 		image, samplingStep, spatialDistanceWeight, errorThreshold,
 		videoMode, keyFramesRatio, GaussianStdDev, connectedFrames);
-
+	iterationIndex = 0;
+	bool go = false;
 	/* Repeat next steps until error is lower than the threshold or
 	until the number of iteration is reached. */
-	for (iterationIndex = 0; ((totalResidualError > errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
-		((iterationIndex < iterationNumber) && (SLICMode == FIXED_ITERATIONS)); ++iterationIndex)
+	/*for (iterationIndex = 0; ((totalResidualError > errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
+	((iterationIndex < iterationNumber) && (SLICMode == FIXED_ITERATIONS)); ++iterationIndex)*/
+	do
 	{
 		/* Reset distance values. */
 		distanceFromClusterCentre.assign(pixelsNumber, DBL_MAX);
@@ -335,8 +337,7 @@ void SLIC::createSuperpixels(
 						computeDistance(centreIndex, Point(x, y), pixelColor);
 
 					/* This pixel has been searched */
-					if (framesNumber % keyFramesRatio == 0)
-						pixelReachedByClusters[y * image.cols + x] = 0;
+					pixelReachedByClusters[y * image.cols + x] = 0;
 					//orphanPixels.at<uchar>(y, x) = 0;
 
 					/* Update pixel's cluster if this distance is smaller
@@ -441,113 +442,128 @@ void SLIC::createSuperpixels(
 
 			totalResidualError /= clustersNumber;
 		}
-	}
 
-	/* Blob Detector */
-	if ((videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
-		&& (framesNumber % keyFramesRatio == 0) && (framesNumber != 0) &&
-		(std::any_of(pixelReachedByClusters.begin(),
-			pixelReachedByClusters.end(),
-			[](uchar u) {return u == 255; })))
-	{
-		/* Image containing orphan pixels */
-		Mat orphanPixels = Mat(image.rows, image.cols, CV_8UC1, pixelReachedByClusters.data());
-		//Mat orphanPixels = Mat(image.rows, image.cols, CV_8UC1);
-		///* Fill orphanPixels with data */
-		//memcpy(orphanPixels.data, pixelReachedByClusters.data(),
-		//	pixelReachedByClusters.size()*sizeof(uchar));
+		/* Blob Detector */
+		/* At the last iteration it finds orphan pixels and it creates a new superpixel to fix it */
+		if ((videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
+			&& (((totalResidualError > errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
+				((iterationIndex < iterationNumber) && (SLICMode == FIXED_ITERATIONS)))
+			&& (std::any_of(pixelReachedByClusters.begin(),
+				pixelReachedByClusters.end(),
+				[](uchar u) {return u == 255; })))
+		{
+			/* Image containing orphan pixels */
+			Mat orphanPixels = Mat(image.rows, image.cols, CV_8UC1, pixelReachedByClusters.data());
 
-		/* Study use only*/
-		/* Convert Grayscale image back to RGB */
-		Mat colouredOrphanPixels;
-		cvtColor(orphanPixels, colouredOrphanPixels, CV_GRAY2RGB);
-		drawClusterContours(colouredOrphanPixels, Vec3b(0, 0, 255));
-		drawClusterCentres(colouredOrphanPixels, Scalar(255, 0, 0));
-		/* end of Study use only*/
+			//Mat orphanPixels = Mat(image.rows, image.cols, CV_8UC1);
+			///* Fill orphanPixels with data */
+			//memcpy(orphanPixels.data, pixelReachedByClusters.data(),
+			//	pixelReachedByClusters.size()*sizeof(uchar));
 
-		Mat workHere;
-		orphanPixels.copyTo(workHere);
+			///* Study use only*/
+			///* Convert Grayscale image back to RGB */
+			//Mat colouredOrphanPixels;
+			//cvtColor(orphanPixels, colouredOrphanPixels, CV_GRAY2RGB);
+			//drawClusterContours(colouredOrphanPixels, Vec3b(0, 0, 255));
+			//drawClusterCentres(colouredOrphanPixels, Scalar(255, 0, 0));
+			///* end of Study use only*/
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 0 orphanPixels.jpg", orphanPixels);
+			Mat workHere;
+			orphanPixels.copyTo(workHere);
 
-		/* Apply dilation to make all blobs detectable */
-		cv::dilate(workHere, workHere,
-			getStructuringElement(MORPH_RECT, Size(10, 10)));
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 0 orphanPixels.jpg", orphanPixels);
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 1 dilation.jpg", workHere);
+			/* Apply dilation to make all blobs detectable */
+			cv::dilate(workHere, workHere,
+				getStructuringElement(MORPH_RECT, Size(10, 10)));
 
-		/* Apply a "frame" to separate the blobs from the borders
-		of the image, because otherwise not all the blobs
-		would have been detected */
-		cv::rectangle(workHere, Point(0, 0),
-			Point(workHere.cols - 1, workHere.rows - 1), Scalar(0), 2);
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 1 dilation.jpg", workHere);
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 2 framing.jpg", workHere);
+			/* Apply a "frame" to separate the blobs from the borders
+			of the image, because otherwise not all the blobs
+			would have been detected */
+			cv::rectangle(workHere, Point(0, 0),
+				Point(workHere.cols - 1, workHere.rows - 1), Scalar(0), 2);
 
-		/* Image used to find contours*/
-		Mat canny_output = Mat(image.rows, image.cols, CV_8UC1);
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 2 framing.jpg", workHere);
 
-		/* Vectors useful to find blobs' centers*/
-		std::vector<std::vector<Point>> contours;
-		std::vector<Vec4i> hierarchy;
+			/* Image used to find contours*/
+			Mat canny_output = Mat(image.rows, image.cols, CV_8UC1);
 
-		/* Detect edges using canny */
-		Canny(workHere, canny_output, 100, 100 * 2, 3);
+			/* Vectors useful to find blobs' centers*/
+			std::vector<std::vector<Point>> contours;
+			std::vector<Vec4i> hierarchy;
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 3 canny.jpg", canny_output);
+			/* Detect edges using canny */
+			Canny(workHere, canny_output, 100, 100 * 2, 3);
 
-		/* Find contours */
-		findContours(canny_output, contours, hierarchy,
-			RETR_LIST, CHAIN_APPROX_SIMPLE, Point(0, 0));
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 3 canny.jpg", canny_output);
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 4 findcontours.jpg", canny_output);
+			/* Find contours */
+			findContours(canny_output, contours, hierarchy,
+				RETR_LIST, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 5 oldClusterCentres.jpg", colouredOrphanPixels);
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 4 findcontours.jpg", canny_output);
 
-		/* Get the moments and the mass centers
-		(the centers of the orphans' pixels) */
-		for (size_t i = 0; i < contours.size(); i++) {
-			Moments mu = moments(contours[i]);
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 5 oldClusterCentres.jpg", colouredOrphanPixels);
 
-			if (mu.m00 == 0)
-				continue;
+			/* Get the moments and the mass centers
+			(the centers of the orphans' pixels) */
+			for (size_t i = 0; i < contours.size(); i++) {
+				Moments mu = moments(contours[i]);
 
-			/* Add the new clusterCentre */
-			clusterCentres.push_back(0);
-			clusterCentres.push_back(0);
-			clusterCentres.push_back(0);
-			clusterCentres.push_back(static_cast<float>(mu.m10 / mu.m00));
-			clusterCentres.push_back(static_cast<float>(mu.m01 / mu.m00));
+				if (mu.m00 == 0)
+					continue;
 
-			/* Add the new cluster */
-			pixelsOfSameCluster.push_back(0);
-			residualError.push_back(0);
+				/* Add the new clusterCentre */
+				clusterCentres.push_back(0);
+				clusterCentres.push_back(0);
+				clusterCentres.push_back(0);
+				clusterCentres.push_back(static_cast<float>(mu.m10 / mu.m00));
+				clusterCentres.push_back(static_cast<float>(mu.m01 / mu.m00));
 
-			/* update number of clusters */
-			clustersNumber += 1;
+				previousClusterCentres.push_back(0);
+				previousClusterCentres.push_back(0);
+				previousClusterCentres.push_back(0);
+				previousClusterCentres.push_back(static_cast<float>(mu.m10 / mu.m00));
+				previousClusterCentres.push_back(static_cast<float>(mu.m01 / mu.m00));
 
-			numberOfCentres = clustersNumber;
+				/* Add the new cluster */
+				pixelsOfSameCluster.push_back(0);
+				residualError.push_back(0);
 
-			/*circle(colouredOrphanPixels, Point2f(static_cast<float>(mu.m10 / mu.m00),
-				static_cast<float>(mu.m01 / mu.m00)), 1, Scalar(255, 255, 0), 2);*/
+				/* update number of clusters */
+				clustersNumber += 1;
+
+				numberOfCentres = clustersNumber;
+
+				//numberOfCentres += 1;
+				//circle(colouredOrphanPixels, Point2f(static_cast<float>(mu.m10 / mu.m00),
+				//	static_cast<float>(mu.m01 / mu.m00)), 1, Scalar(255, 255, 0), 2);
+			}
+
+			///* Thesis writing use only - save image */
+			//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 6 newClusterCentres.jpg", colouredOrphanPixels);
+
+			orphanPixels.release();
+			contours.clear();
+			hierarchy.clear();
+			workHere.release();
+			//colouredOrphanPixels.release();
+			canny_output.release();
 		}
+		else go = true;
 
-		///* Thesis writing use only - save image */
-		//imwrite("../../ThesisData/Images/" + std::to_string(framesNumber) + " 6 newClusterCentres.jpg", colouredOrphanPixels);
+		++iterationIndex;
 
-		orphanPixels.release();
-		contours.clear();
-		hierarchy.clear();
-		workHere.release();
-		colouredOrphanPixels.release();
-		canny_output.release();
-	}
+	} while ((((totalResidualError > errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
+		((iterationIndex < iterationNumber) && (SLICMode == FIXED_ITERATIONS))) && go);
 
 	/* Another frame was processed. */
 	++framesNumber;
