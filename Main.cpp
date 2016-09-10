@@ -131,13 +131,13 @@ int VideoSLIC(
 	double avgTime = 0;
 	double stdDeviation = 0;
 
-	///* COMMENTED ONLY IN STUDY MODE!!! */
-	/* Output window name. */
-	const string windowName = "VideoSLIC";
+	/////* COMMENTED ONLY IN STUDY MODE!!! */
+	///* Output window name. */
+	//const string windowName = "VideoSLIC";
 
-	/* Open a new window where to play the video. */
-	namedWindow(windowName, CV_WINDOW_AUTOSIZE);
-	///* End of study mode */
+	///* Open a new window where to play the video. */
+	//namedWindow(windowName, CV_WINDOW_AUTOSIZE);
+	/////* End of study mode */
 
 	
 	/* Enter an infinite cycle to elaborate the video until its last frame. */
@@ -166,12 +166,12 @@ int VideoSLIC(
 		//SLICFrame->enforceConnectivity(currentFrame);
 		//SLICFrame->colorSuperpixels(currentFrame);
 
-		/* COMMENTED ONLY IN STUDY MODE!!! */
-		/* Convert frame back to RGB. */
-		cvtColor(currentFrame, currentFrame, CV_Lab2BGR);
+		///* COMMENTED ONLY IN STUDY MODE!!! */
+		///* Convert frame back to RGB. */
+		//cvtColor(currentFrame, currentFrame, CV_Lab2BGR);
 
-		SLICFrame->drawClusterContours(currentFrame, Vec3b(0, 0, 255)/*, Rect(videoWidth / 2, 0, videoWidth / 2, videoHeight)*/);
-		//SLICFrame->drawClusterCentres(currentFrame, Scalar(0, 0, 255));
+		//SLICFrame->drawClusterContours(currentFrame, Vec3b(0, 0, 255)/*, Rect(videoWidth / 2, 0, videoWidth / 2, videoHeight)*/);
+		////SLICFrame->drawClusterCentres(currentFrame, Scalar(0, 0, 255));
 
 		/* Measure time after processing a video frame. */
 		boost::chrono::high_resolution_clock::time_point endPoint =
@@ -184,9 +184,9 @@ int VideoSLIC(
 		++framesNumber;
 		//SLICFrame->drawInformation(currentFrame, framesNumber, elapsedTime.count());
 
-		/* Commented in STUDY USE ONLY */
-		/* Show frame in the window. */
-		imshow(windowName, currentFrame);
+		///* Commented in STUDY USE ONLY */
+		///* Show frame in the window. */
+		//imshow(windowName, currentFrame);
 
 		/* Compute some statistics and print them on screen. */
 		totalTime += elapsedTime.count();
@@ -195,8 +195,10 @@ int VideoSLIC(
 
 		stdDeviation = sqrt(framesNumber * totalTime2 - totalTime * totalTime) / framesNumber;
 
-		cout << "Frame: " << framesNumber << "   ex. time now: " << elapsedTime.count() << "   average ex. time: "
-			<< avgTime << "   numOfCentres: " << SLICFrame->numberOfCentres << "   stdDev: " << stdDeviation << endl << endl;
+		cout << "Frame: " << framesNumber << "   ex. time now: "
+			<< elapsedTime.count() << "   average ex. time: "
+			<< avgTime << "   numOfCentres: " << SLICFrame->numberOfCentres
+			<< "   stdDev: " << stdDeviation << endl << endl;
 
 		/* End program on ESC press. */
 		if (cvWaitKey(1) == 27)
