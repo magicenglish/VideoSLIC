@@ -205,11 +205,11 @@ int VideoSLIC(
 			break;
 	}
 
-	cin.ignore();
-
 	/* Free used memory before closing the program. */
 	if (SLICFrame != NULL)
 		delete SLICFrame;
+	
+	cin.ignore();
 
 	/* Close window after video processing. */
 	cv::destroyAllWindows();
