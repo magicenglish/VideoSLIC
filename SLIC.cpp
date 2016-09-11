@@ -337,7 +337,8 @@ void SLIC::createSuperpixels(
 						computeDistance(centreIndex, Point(x, y), pixelColor);
 
 					/* This pixel has been searched */
-					pixelReachedByClusters[y * image.cols + x] = 0;
+					if (videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
+						pixelReachedByClusters[y * image.cols + x] = 0;
 					//orphanPixels.at<uchar>(y, x) = 0;
 
 					/* Update pixel's cluster if this distance is smaller
