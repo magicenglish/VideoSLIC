@@ -205,6 +205,8 @@ int VideoSLIC(
 			break;
 	}
 
+	cin.ignore();
+
 	/* Free used memory before closing the program. */
 	if (SLICFrame != NULL)
 		delete SLICFrame;
