@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 {
 	/* Video source location. */
 	//	const string videoLocation = (argc == 2) ? argv[1] : "C:\\Users\\Claudiu\\Desktop\\Video Data Set\\EDSH1.avi";
-	const string videoLocation = "../../ThesisData/vid/EDSHK.avi";
+	const string videoLocation = "../../ThesisData/vid/EDSH1.avi";
 
 	/* Output window name. */
 	const string windowName = "VideoSLIC";
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	   the next frame (more details are found in the paper). */
 	bool                 connectedFrames = true;
 	SLICElaborationMode  SLICMode = ERROR_THRESHOLD;
-	VideoElaborationMode VideoMode = ADD_SUPERPIXELS;
+	VideoElaborationMode VideoMode = KEY_FRAMES_NOISE;
 	/* Use a key frame every keyFramesRatio frames. */
 	unsigned             keyFramesRatio = 30;
 	/* Standard deviation of the Gaussian noise. */
@@ -130,6 +130,7 @@ int VideoSLIC(
 	double totalTime2 = 0;
 	double avgTime = 0;
 	double stdDeviation = 0;
+	double avgIterations = 0;
 
 	/////* COMMENTED ONLY IN STUDY MODE!!! */
 	///* Output window name. */
@@ -192,13 +193,17 @@ int VideoSLIC(
 		totalTime += elapsedTime.count();
 		totalTime2 += elapsedTime.count() * elapsedTime.count();
 		avgTime = totalTime / framesNumber;
-
+		avgIterations += (SLICFrame->iterationIndex);
 		stdDeviation = sqrt(framesNumber * totalTime2 - totalTime * totalTime) / framesNumber;
 
-		cout << "Frame: " << framesNumber << "   ex. time now: "
-			<< elapsedTime.count() << "   average ex. time: "
-			<< avgTime << "   numOfCentres: " << SLICFrame->numberOfCentres
-			<< "   stdDev: " << stdDeviation << endl << endl;
+		cout << "Frame: " << framesNumber 
+			<< "   ex. time now: "	<< elapsedTime.count() 
+			<< "   average ex. time: " << avgTime
+			<< "   numOfCentres: " << SLICFrame->clustersNumber
+			<< "   stdDev: " << stdDeviation 
+			<< "   numOfIterations: " << SLICFrame->iterationIndex
+			<< "   average iterations: " << avgIterations / framesNumber
+			<< endl << endl;
 
 		/* End program on ESC press. */
 		if (cvWaitKey(1) == 27)

@@ -113,9 +113,6 @@ void SLIC::clearSLICData()
 	this->previousClusterCentres.clear();
 	this->pixelsOfSameCluster.clear();
 	this->residualError.clear();
-
-	/* STUDY USE ONLY */
-	this->numberOfCentres = 0;
 }
 
 void SLIC::initializeSLICData(
@@ -137,7 +134,7 @@ void SLIC::initializeSLICData(
 		(((videoMode == KEY_FRAMES) || (videoMode == KEY_FRAMES_NOISE))
 			&& (framesNumber % keyFramesRatio == 0)) ||
 		(((videoMode == ADD_SUPERPIXELS) || (videoMode == ADD_SUPERPIXELS_NOISE))
-			&& (numberOfCentres > 1300)))
+			&& (clustersNumber > 1300)))
 	{
 		/* Clear previous data before initialization. */
 		if (clusterCentres.size() == 0) {
@@ -199,9 +196,6 @@ void SLIC::initializeSLICData(
 
 		/* Total number of clusters. */
 		this->clustersNumber = static_cast<unsigned>(pixelsOfSameCluster.size());
-
-		/* STUDY USE ONLY */
-		this->numberOfCentres = static_cast<unsigned>(pixelsOfSameCluster.size());
 
 		///* Reset orphan pixels */
 		//if (videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
@@ -541,8 +535,6 @@ void SLIC::createSuperpixels(
 
 				/* update number of clusters */
 				clustersNumber += 1;
-
-				numberOfCentres = clustersNumber;
 
 				//numberOfCentres += 1;
 				//circle(colouredOrphanPixels, Point2f(static_cast<float>(mu.m10 / mu.m00),

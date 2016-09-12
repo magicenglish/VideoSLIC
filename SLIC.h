@@ -118,15 +118,8 @@ protected:
 	   the c-th cluster is e. */
 	std::vector<double> residualError;
 
-	/* The number of iterations performed by the algorithm
-	   (for each frame in the video). */
-	unsigned iterationIndex;
-
 	/* The total number of pixel of the image or frame. */
 	unsigned pixelsNumber;
-
-	/* The total number of cluster. */
-	unsigned clustersNumber;
 
 	/* The sampling step distance. */
 	unsigned samplingStep;
@@ -230,8 +223,12 @@ public:
 		const unsigned totalFrames,
 		const unsigned executionTimeInMilliseconds);
 
-	/* STUDY USE ONLY */
-	int numberOfCentres;
+	/* The total number of cluster. */
+	unsigned clustersNumber;
+
+	/* The number of iterations performed by the algorithm
+	(for each frame in the video). */
+	unsigned iterationIndex;
 };
 
 #endif
