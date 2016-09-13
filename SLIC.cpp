@@ -441,8 +441,8 @@ void SLIC::createSuperpixels(
 		/* Blob Detector */
 		/* At the last iteration it finds orphan pixels and it creates a new superpixel to fix it */
 		if ((videoMode == ADD_SUPERPIXELS || videoMode == ADD_SUPERPIXELS_NOISE)
-			&& (((totalResidualError > errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
-				((iterationIndex < iterationNumber) && (SLICMode == FIXED_ITERATIONS)))
+			&& (((totalResidualError < errorThreshold) && (SLICMode == ERROR_THRESHOLD)) ||
+				((iterationIndex >= iterationNumber-1) && (SLICMode == FIXED_ITERATIONS)))
 			&& (std::any_of(pixelReachedByClusters.begin(),
 				pixelReachedByClusters.end(),
 				[](uchar u) {return u == 255; })))

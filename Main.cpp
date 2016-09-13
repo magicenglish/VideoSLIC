@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 {
 	/* Video source location. */
 	//	const string videoLocation = (argc == 2) ? argv[1] : "C:\\Users\\Claudiu\\Desktop\\Video Data Set\\EDSH1.avi";
-	const string videoLocation = "../../ThesisData/vid/EDSH1.avi";
+	const string videoLocation = "../../ThesisData/vid/EDSHK.avi";
 
 	/* Output window name. */
 	const string windowName = "VideoSLIC";
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	   the next frame (more details are found in the paper). */
 	bool                 connectedFrames = true;
 	SLICElaborationMode  SLICMode = ERROR_THRESHOLD;
-	VideoElaborationMode VideoMode = KEY_FRAMES_NOISE;
+	VideoElaborationMode VideoMode = NOISE;
 	/* Use a key frame every keyFramesRatio frames. */
 	unsigned             keyFramesRatio = 30;
 	/* Standard deviation of the Gaussian noise. */
